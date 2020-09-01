@@ -4,7 +4,9 @@ plugins {
     kotlin("multiplatform")
     id("com.android.library")
     id("kotlin-android-extensions")
+    id("dev.icerock.mobile.multiplatform-resources")
 }
+
 group = "com.example"
 version = "1.0-SNAPSHOT"
 
@@ -14,6 +16,7 @@ repositories {
     jcenter()
     mavenCentral()
 }
+
 kotlin {
     android()
     iosX64("ios") {
@@ -24,7 +27,11 @@ kotlin {
         }
     }
     sourceSets {
-        val commonMain by getting
+        val commonMain by getting {
+            dependencies {
+                api("dev.icerock.moko:resources:0.11.1")
+            }
+        }
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test-common"))
@@ -37,10 +44,19 @@ kotlin {
             }
         }
         val androidTest by getting
-        val iosMain by getting
+        val iosMain by getting {
+            dependencies {
+                api("dev.icerock.moko:resources:0.11.1")
+            }
+        }
         val iosTest by getting
     }
 }
+
+multiplatformResources {
+    multiplatformResourcesPackage = "org.example.library" // required
+}
+
 android {
     compileSdkVersion(29)
     defaultConfig {
@@ -55,6 +71,7 @@ android {
         }
     }
 }
+
 val packForXcode by tasks.creating(Sync::class) {
     group = "build"
     val mode = System.getenv("CONFIGURATION") ?: "DEBUG"
@@ -65,4 +82,5 @@ val packForXcode by tasks.creating(Sync::class) {
     from({ framework.outputDirectory })
     into(targetDir)
 }
+
 tasks.getByName("build").dependsOn(packForXcode)
